@@ -29,8 +29,8 @@ def crear_partnership():
         #Nuevos mensajes 
         comando = CrearPartnership(
             id=partnership_dict.get('id', str(uuid.uuid4())),
-            id_marca=partnership_dict.get('marca', ''),
-            id_partner=partnership_dict.get('identificacion', ''),
+            id_marca=partnership_dict.get('id_marca', str(uuid.uuid4())),
+            id_partner=partnership_dict.get('id_identificacion', str(uuid.uuid4())),
             tipo_partnership=partnership_dict.get('tipo_partnership', 'marca_embajador'),
             terminos_contrato=partnership_dict.get('canales', ''),
             comision_porcentaje=partnership_dict.get('comision_porcentaje', 0.0),
