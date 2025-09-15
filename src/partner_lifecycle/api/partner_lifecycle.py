@@ -26,16 +26,17 @@ def crear_partnership():
         partnership_dict = request.json
         logger.info(f"Request data: {partnership_dict}")
         
+        #Nuevos mensajes 
         comando = CrearPartnership(
             id=partnership_dict.get('id', str(uuid.uuid4())),
-            id_marca=partnership_dict.get('id_marca', ''),
-            id_partner=partnership_dict.get('id_partner', ''),
-            tipo_partnership=partnership_dict.get('tipo_partnership', 'marca_afiliado'),
-            terminos_contrato=partnership_dict.get('terminos_contrato', ''),
+            id_marca=partnership_dict.get('marca', ''),
+            id_partner=partnership_dict.get('identificacion', ''),
+            tipo_partnership=partnership_dict.get('tipo_partnership', 'marca_embajador'),
+            terminos_contrato=partnership_dict.get('canales', ''),
             comision_porcentaje=partnership_dict.get('comision_porcentaje', 0.0),
             metas_mensuales=partnership_dict.get('metas_mensuales', 0),
-            beneficios_adicionales=partnership_dict.get('beneficios_adicionales', ''),
-            notas=partnership_dict.get('notas', ''),
+            beneficios_adicionales=partnership_dict.get('campania_asociada', ''),
+            notas=partnership_dict.get('categoria', ''),
             fecha_creacion=datetime.now().isoformat(),
             fecha_actualizacion=datetime.now().isoformat()
         )

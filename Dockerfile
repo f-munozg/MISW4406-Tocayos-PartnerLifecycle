@@ -15,6 +15,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiar código fuente
 COPY src/ ./src/
 
+# Cambiar directorio de trabajo a src para resolver imports
+ENV PYTHONPATH=/app/src
+
 # Crear directorio para logs
 RUN mkdir -p /app/logs
 
@@ -22,4 +25,4 @@ RUN mkdir -p /app/logs
 EXPOSE 5002
 
 # Comando por defecto
-CMD ["python", "src/partner_lifecycle/main.py"]
+CMD ["python", "-m", "partner_lifecycle.main"]
