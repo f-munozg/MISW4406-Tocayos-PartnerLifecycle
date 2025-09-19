@@ -62,10 +62,10 @@ def _(comando: CrearPartnership):
         )
         
         # Publicar evento en Pulsar si está disponible
-        if PULSAR_AVAILABLE and pulsar_publisher:
-            pulsar_publisher.publish_event(evento, 'partner-events')
-        else:
-            logger.info("Pulsar no disponible, evento no publicado")
+        # if PULSAR_AVAILABLE and pulsar_publisher:
+        #    pulsar_publisher.publish_event(evento, 'partner-events')
+        # else:
+        #    logger.info("Pulsar no disponible, evento no publicado")
         
         logger.info(f"Partnership creada exitosamente: {partnership_model.id}")
         
