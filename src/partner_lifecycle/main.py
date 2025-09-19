@@ -44,7 +44,8 @@ def create_app():
         from partner_lifecycle.infraestructura.pulsar import pulsar_publisher
         import atexit
         
-        # Configurar dependency injection
+        # Configurar dependency injection con la aplicación Flask
+        dependency_container.set_app(app)
         event_processing_service = dependency_container.get_event_processing_service()
         event_consumer_service = configure_event_consumer_service(app, event_processing_service)
         

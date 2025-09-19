@@ -24,8 +24,9 @@ class EventProcessingServiceInterface(ABC):
 class EventProcessingService(EventProcessingServiceInterface):
     """Implementación del servicio de procesamiento de eventos"""
     
-    def __init__(self, command_executor):
+    def __init__(self, command_executor, app=None):
         self._command_executor = command_executor
+        self._app = app
     
     def process_partnership_iniciada(self, payload: Dict[str, Any]) -> None:
         """Procesa el evento PartnershipIniciada ejecutando el comando CrearPartnership"""
@@ -35,8 +36,8 @@ class EventProcessingService(EventProcessingServiceInterface):
             # Mapear datos del evento a comando de aplicación
             command_data = self._map_partnership_iniciada_to_command(payload)
             
-            # Ejecutar comando a través del executor
-            self._command_executor.execute_crear_partnership(command_data)
+            # Ejecutar comando a través del executor con contexto de aplicación
+            self._command_executor.execute_crear_partnership(command_data, self._app)
             
             logger.info(f"Comando CrearPartnership ejecutado exitosamente para partnership: {command_data['id']}")
             

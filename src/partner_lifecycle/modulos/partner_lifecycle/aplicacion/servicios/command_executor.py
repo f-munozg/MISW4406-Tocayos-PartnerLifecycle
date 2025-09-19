@@ -16,21 +16,25 @@ class CommandExecutorInterface(ABC):
     """Interfaz para el ejecutor de comandos"""
     
     @abstractmethod
-    def execute_crear_partnership(self, command_data: Dict[str, Any]) -> None:
+    def execute_crear_partnership(self, command_data: Dict[str, Any], app=None) -> None:
         """Ejecuta el comando CrearPartnership"""
         pass
 
 class CommandExecutor(CommandExecutorInterface):
     """Implementación del ejecutor de comandos"""
     
-    def execute_crear_partnership(self, command_data: Dict[str, Any]) -> None:
+    def execute_crear_partnership(self, command_data: Dict[str, Any], app=None) -> None:
         """Ejecuta el comando CrearPartnership"""
         try:
             # Crear comando
             comando = CrearPartnership(**command_data)
             
-            # Ejecutar comando
-            ejecutar_commando(comando)
+            # Ejecutar comando con contexto de aplicación si está disponible
+            if app:
+                with app.app_context():
+                    ejecutar_commando(comando)
+            else:
+                ejecutar_commando(comando)
             
         except Exception as e:
             logger.error(f"Error ejecutando comando CrearPartnership: {e}")
