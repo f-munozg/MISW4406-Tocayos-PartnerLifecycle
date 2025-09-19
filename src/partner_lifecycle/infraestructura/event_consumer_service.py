@@ -64,6 +64,8 @@ class EventConsumerService:
                 self._process_partnership_suspendida(event_payload)
             elif event_type == 'PartnershipTerminada':
                 self._process_partnership_terminada(event_payload)
+            else:
+                logger.info("Evento ignorado: %s", event_type)
                 
         except Exception as e:
             logger.error(f"Error procesando evento de partnership: {e}")
