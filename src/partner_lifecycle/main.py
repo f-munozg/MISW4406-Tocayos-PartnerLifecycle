@@ -37,15 +37,20 @@ def create_app():
     except Exception as e:
         logger.error(f"Error registrando blueprint de partner lifecycle: {e}")
     
-    # Inicializar servicios de Pulsar (opcional)
+    # Configurar dependency injection y servicios de Pulsar
     try:
-        from partner_lifecycle.infraestructura.event_consumer_service import event_consumer_service
+        from partner_lifecycle.infraestructura.event_consumer_service import configure_event_consumer_service
+        from partner_lifecycle.modulos.partner_lifecycle.aplicacion.servicios.dependency_injection import dependency_container
         from partner_lifecycle.infraestructura.pulsar import pulsar_publisher
         import atexit
         
+        # Configurar dependency injection
+        event_processing_service = dependency_container.get_event_processing_service()
+        event_consumer_service = configure_event_consumer_service(event_processing_service)
+        
         # Iniciar el servicio de consumo de eventos
         event_consumer_service.start_consuming()
-        logger.info("Servicio de consumo de eventos iniciado")
+        logger.info("Servicio de consumo de eventos iniciado con dependency injection")
         
         # Registrar función de limpieza al cerrar la aplicación
         atexit.register(cleanup_pulsar_connections)
@@ -58,9 +63,7 @@ def create_app():
 def cleanup_pulsar_connections():
     """Limpia las conexiones de Pulsar al cerrar la aplicación"""
     try:
-        from partner_lifecycle.infraestructura.event_consumer_service import event_consumer_service
         from partner_lifecycle.infraestructura.pulsar import pulsar_publisher
-        event_consumer_service.stop_consuming()
         pulsar_publisher.close()
         logger.info("Conexiones de Pulsar cerradas correctamente")
     except Exception as e:

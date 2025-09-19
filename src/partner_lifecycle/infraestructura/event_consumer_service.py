@@ -13,10 +13,11 @@ from partner_lifecycle.infraestructura.pulsar import PulsarEventConsumer, Pulsar
 logger = logging.getLogger(__name__)
 
 class EventConsumerService:
-    def __init__(self):
+    def __init__(self, event_processing_service=None):
         self.config = PulsarConfig()
         self.consumers = {}
         self.running = False
+        self._event_processing_service = event_processing_service
         
     def start_consuming(self):
         """Inicia el consumo de eventos para todos los módulos"""
@@ -69,7 +70,12 @@ class EventConsumerService:
     
     # Métodos de procesamiento específicos para cada evento
     def _process_partnership_iniciada(self, payload):
-        logger.info(f"Partnership iniciada: {payload.get('id_partnership')}")
+        """Procesa el evento PartnershipIniciada delegando a la capa de aplicación"""
+        if self._event_processing_service:
+            self._event_processing_service.process_partnership_iniciada(payload)
+        else:
+            logger.warning("EventProcessingService no configurado, solo logueando evento")
+            logger.info(f"Partnership iniciada: {payload.get('id_partnership')}")
     
     def _process_partnership_activada(self, payload):
         logger.info(f"Partnership activada: {payload.get('id_partnership')}")
@@ -80,5 +86,11 @@ class EventConsumerService:
     def _process_partnership_terminada(self, payload):
         logger.info(f"Partnership terminada: {payload.get('id_partnership')}")
 
-# Instancia global del servicio
-event_consumer_service = EventConsumerService()
+# Instancia global del servicio (se configurará con dependency injection)
+event_consumer_service = None
+
+def configure_event_consumer_service(event_processing_service):
+    """Configura el servicio de consumo de eventos con dependency injection"""
+    global event_consumer_service
+    event_consumer_service = EventConsumerService(event_processing_service)
+    return event_consumer_service

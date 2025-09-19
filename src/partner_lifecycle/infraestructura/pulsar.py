@@ -7,9 +7,21 @@ En este archivo se define la configuración y utilidades para Pulsar
 import os
 import json
 import logging
+import pulsar
 from typing import Dict, Any
 from pulsar import Client, Producer, Consumer
 from partner_lifecycle.seedwork.dominio.eventos import EventoDominio
+
+# Try to import ConsumerType, fallback to string if not available
+try:
+    from pulsar import ConsumerType
+except ImportError:
+    # Fallback: use string values for consumer types
+    class ConsumerType:
+        Shared = "Shared"
+        Exclusive = "Exclusive"
+        Failover = "Failover"
+        KeyShared = "KeyShared"
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +104,7 @@ class PulsarEventConsumer:
         """Se suscribe a un topic específico"""
         try:
             client = self._get_client()
-            consumer = client.subscribe(topic_name, subscription_name)
+            consumer = client.subscribe(topic=topic_name, subscription_name=subscription_name, consumer_type=ConsumerType.Shared)
             self.consumers[topic_name] = consumer
             
             # Procesar mensajes en un hilo separado
@@ -111,15 +123,22 @@ class PulsarEventConsumer:
         """Procesa mensajes del consumer"""
         try:
             while True:
-                msg = consumer.receive(timeout_millis=1000)
                 try:
+                    msg = consumer.receive(timeout_millis=1000)
                     # Deserializar el mensaje
                     event_data = json.loads(msg.data().decode('utf-8'))
                     callback(event_data)
                     consumer.acknowledge(msg)
                 except Exception as e:
-                    logger.error(f"Error procesando mensaje: {e}")
-                    consumer.negative_acknowledge(msg)
+                    # Check if it's a timeout exception (normal behavior when no messages)
+                    if "TimeOut" in str(e) or "timeout" in str(e).lower():
+                        # This is normal - no messages available, continue waiting
+                        continue
+                    else:
+                        # This is an actual error processing a message
+                        logger.error(f"Error procesando mensaje: {e}")
+                        if 'msg' in locals():
+                            consumer.negative_acknowledge(msg)
         except Exception as e:
             logger.error(f"Error en el procesamiento de mensajes: {e}")
     
