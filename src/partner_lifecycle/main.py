@@ -46,7 +46,7 @@ def create_app():
         
         # Configurar dependency injection
         event_processing_service = dependency_container.get_event_processing_service()
-        event_consumer_service = configure_event_consumer_service(event_processing_service)
+        event_consumer_service = configure_event_consumer_service(app, event_processing_service)
         
         # Iniciar el servicio de consumo de eventos
         event_consumer_service.start_consuming()

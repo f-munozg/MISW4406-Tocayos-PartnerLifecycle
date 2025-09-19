@@ -13,10 +13,11 @@ from partner_lifecycle.infraestructura.pulsar import PulsarEventConsumer, Pulsar
 logger = logging.getLogger(__name__)
 
 class EventConsumerService:
-    def __init__(self, event_processing_service=None):
+    def __init__(self, app=None, event_processing_service=None):
         self.config = PulsarConfig()
         self.consumers = {}
         self.running = False
+        self.app = app
         self._event_processing_service = event_processing_service
         
     def start_consuming(self):
@@ -91,8 +92,8 @@ class EventConsumerService:
 # Instancia global del servicio (se configurará con dependency injection)
 event_consumer_service = None
 
-def configure_event_consumer_service(event_processing_service):
+def configure_event_consumer_service(app, event_processing_service):
     """Configura el servicio de consumo de eventos con dependency injection"""
     global event_consumer_service
-    event_consumer_service = EventConsumerService(event_processing_service)
+    event_consumer_service = EventConsumerService(app, event_processing_service)
     return event_consumer_service
