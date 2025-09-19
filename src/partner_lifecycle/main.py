@@ -29,6 +29,12 @@ def create_app():
         logger.info("Handlers de partner lifecycle registrados")
     except Exception as e:
         logger.error(f"Error registrando handlers de partner lifecycle: {e}")
+        # Continuar sin Pulsar pero asegurar que los handlers estén registrados
+        try:
+            import partner_lifecycle.modulos.partner_lifecycle.aplicacion.handlers.crear_partnership_handler
+            logger.info("Handler CrearPartnership registrado manualmente")
+        except Exception as e2:
+            logger.error(f"Error registrando handler manualmente: {e2}")
     
     try:
         from partner_lifecycle.api.partner_lifecycle import bp as partner_lifecycle_bp
@@ -48,6 +54,10 @@ def create_app():
         dependency_container.set_app(app)
         event_processing_service = dependency_container.get_event_processing_service()
         event_consumer_service = configure_event_consumer_service(app, event_processing_service)
+        
+        # Verificar que todo esté configurado correctamente
+        logger.info(f"EventProcessingService configurado: {event_processing_service is not None}")
+        logger.info(f"EventConsumerService configurado: {event_consumer_service is not None}")
         
         # Iniciar el servicio de consumo de eventos
         event_consumer_service.start_consuming()

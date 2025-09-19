@@ -9,8 +9,15 @@ from partner_lifecycle.modulos.partner_lifecycle.infraestructura.modelos import 
     PartnershipDBModel, TipoPartnershipEnum, EstadoPartnershipEnum, NivelPartnershipEnum
 )
 from partner_lifecycle.seedwork.aplicacion.comandos import ejecutar_commando
-from partner_lifecycle.infraestructura.pulsar import pulsar_publisher
 from partner_lifecycle.config.db import db
+
+# Importar Pulsar solo si está disponible
+try:
+    from partner_lifecycle.infraestructura.pulsar import pulsar_publisher
+    PULSAR_AVAILABLE = True
+except ImportError:
+    PULSAR_AVAILABLE = False
+    pulsar_publisher = None
 from datetime import datetime
 import uuid
 import logging
@@ -54,8 +61,11 @@ def _(comando: CrearPartnership):
             fecha_inicio=partnership_model.fecha_creacion
         )
         
-        # Publicar evento en Pulsar
-        pulsar_publisher.publish_event(evento, 'partner-events')
+        # Publicar evento en Pulsar si está disponible
+        if PULSAR_AVAILABLE and pulsar_publisher:
+            pulsar_publisher.publish_event(evento, 'partner-events')
+        else:
+            logger.info("Pulsar no disponible, evento no publicado")
         
         logger.info(f"Partnership creada exitosamente: {partnership_model.id}")
         

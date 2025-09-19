@@ -32,6 +32,7 @@ class EventProcessingService(EventProcessingServiceInterface):
         """Procesa el evento PartnershipIniciada ejecutando el comando CrearPartnership"""
         try:
             logger.info(f"Procesando PartnershipIniciada: {payload.get('id_partnership')}")
+            logger.info(f"EventProcessingService tiene app: {self._app is not None}")
             
             # Mapear datos del evento a comando de aplicación
             command_data = self._map_partnership_iniciada_to_command(payload)

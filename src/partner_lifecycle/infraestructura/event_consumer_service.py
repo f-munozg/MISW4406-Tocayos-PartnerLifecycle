@@ -74,6 +74,7 @@ class EventConsumerService:
     # Métodos de procesamiento específicos para cada evento
     def _process_partnership_iniciada(self, payload):
         """Procesa el evento PartnershipIniciada delegando a la capa de aplicación"""
+        logger.info(f"EventConsumerService tiene event_processing_service: {self._event_processing_service is not None}")
         if self._event_processing_service:
             self._event_processing_service.process_partnership_iniciada(payload)
         else:

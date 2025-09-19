@@ -26,14 +26,18 @@ class CommandExecutor(CommandExecutorInterface):
     def execute_crear_partnership(self, command_data: Dict[str, Any], app=None) -> None:
         """Ejecuta el comando CrearPartnership"""
         try:
+            logger.info(f"Ejecutando comando CrearPartnership con app: {app is not None}")
+            
             # Crear comando
             comando = CrearPartnership(**command_data)
             
             # Ejecutar comando con contexto de aplicación si está disponible
             if app:
+                logger.info("Ejecutando comando dentro del contexto de Flask")
                 with app.app_context():
                     ejecutar_commando(comando)
             else:
+                logger.warning("Ejecutando comando sin contexto de Flask")
                 ejecutar_commando(comando)
             
         except Exception as e:
