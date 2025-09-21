@@ -33,9 +33,20 @@ class PulsarConfig:
         self.tenant = 'partner-lifecycle'
         self.namespace = 'events'
         
-    def get_topic_name(self, event_type: str) -> str:
-        """Genera el nombre del topic basado en el tipo de evento"""
-        return f"persistent://{self.tenant}/{self.namespace}/{event_type}"
+    def get_topic_name(self, event_type: str, tenant: str = None) -> str:
+        """Genera el nombre del topic basado en el tipo de evento y tenant"""
+        target_tenant = tenant or self.tenant
+        return f"persistent://{target_tenant}/{self.namespace}/{event_type}"
+    
+    def get_routing_config(self, event_type: str, status: str) -> tuple:
+        """Determina el tenant y topic basado en el tipo de evento y status"""
+        if event_type == 'CommandCreatePartner' and status == 'failed':
+            return 'content-management', 'content-events'
+        elif event_type == 'EventPartnerCreated' and status == 'success':
+            return 'partner-lifecycle', 'partner-events'
+        else:
+            # Default routing
+            return self.tenant, event_type
 
 class PulsarEventPublisher:
     def __init__(self):
@@ -57,9 +68,11 @@ class PulsarEventPublisher:
         return self.producers[topic_name]
     
     def publish_event(self, evento: EventoDominio, event_type: str, status: str):
-        """Publica un evento en Pulsar"""
+        """Publica un evento en Pulsar con routing basado en tipo y status"""
         try:
-            topic_name = self.config.get_topic_name(event_type)
+            # Determinar tenant y topic basado en el tipo de evento y status
+            tenant, topic = self.config.get_routing_config(event_type, status)
+            topic_name = self.config.get_topic_name(topic, tenant)
             producer = self._get_producer(topic_name)
             
             # Serializar el evento
@@ -76,7 +89,7 @@ class PulsarEventPublisher:
             
             # Publicar el evento
             producer.send(event_data.encode('utf-8'))
-            logger.info(f"Evento publicado en {topic_name}: {evento.__class__.__name__}")
+            logger.info(f"Evento publicado en {topic_name} (tenant: {tenant}, topic: {topic}): {evento.__class__.__name__}")
             
         except Exception as e:
             logger.error(f"Error publicando evento en Pulsar: {e}")

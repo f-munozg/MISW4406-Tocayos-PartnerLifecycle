@@ -57,7 +57,7 @@ class EventConsumerService:
             logger.info(f"Procesando evento de partnership: {event_type}")
             
             # Aquí se pueden agregar lógicas específicas para cada tipo de evento
-            if event_type == 'PartnershipIniciada':
+            if event_type == 'CommandCreatePartner':
                 self._process_partnership_iniciada(event_payload)
             elif event_type == 'PartnershipActivada':
                 self._process_partnership_activada(event_payload)
