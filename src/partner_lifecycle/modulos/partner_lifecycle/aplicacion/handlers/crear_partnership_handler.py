@@ -24,9 +24,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Global variable for partnership model
+partnership_model = None
+
 @ejecutar_commando.register
 def _(comando: CrearPartnership):
     """Handler para crear nueva partnership"""
+    global partnership_model
     evento = None  # Initialize evento variable
     partnership_model = None  # Initialize partnership_model variable
     
@@ -69,6 +73,10 @@ def _(comando: CrearPartnership):
             fecha_inicio=partnership_model.fecha_creacion
         )
         
+        # Debug logging for success path
+        logger.info(f"Debug Success - PULSAR_AVAILABLE: {PULSAR_AVAILABLE}")
+        logger.info(f"Debug Success - pulsar_publisher: {pulsar_publisher}")
+        
         if PULSAR_AVAILABLE and pulsar_publisher:
            pulsar_publisher.publish_event(comando.saga_id, evento, 'EventPartnerCompleted', 'success')
         else:
@@ -79,6 +87,11 @@ def _(comando: CrearPartnership):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Error creando partnership: {e}")
+        
+        # Debug logging to understand why Pulsar might not be available
+        logger.info(f"Debug - PULSAR_AVAILABLE: {PULSAR_AVAILABLE}")
+        logger.info(f"Debug - pulsar_publisher: {pulsar_publisher}")
+        logger.info(f"Debug - partnership_model: {partnership_model}")
         
         # Only publish failure event if we have a valid partnership_model to create evento from
         if PULSAR_AVAILABLE and pulsar_publisher and partnership_model is not None:
