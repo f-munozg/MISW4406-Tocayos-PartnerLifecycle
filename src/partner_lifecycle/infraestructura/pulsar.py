@@ -44,7 +44,7 @@ class PulsarConfig:
         """Determina el tenant y topic basado en el tipo de evento y status"""
         if event_type == 'CommandCreatePartner' and status == 'failed':
             return 'content-events'
-        elif event_type == 'EventPartnerCreated' and status == 'success':
+        elif event_type == 'EventPartnerCompleted' and status == 'success':
             return 'partner-events'
         else:
             # Default routing

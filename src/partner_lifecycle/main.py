@@ -55,14 +55,8 @@ def create_app():
         event_processing_service = dependency_container.get_event_processing_service()
         event_consumer_service = configure_event_consumer_service(app, event_processing_service)
         
-        # Verificar que todo esté configurado correctamente
-        logger.info(f"EventProcessingService configurado: {event_processing_service is not None}")
-        logger.info(f"EventConsumerService configurado: {event_consumer_service is not None}")
-        
         # Iniciar el servicio de consumo de eventos
         event_consumer_service.start_consuming()
-        logger.info("Servicio de consumo de eventos iniciado con dependency injection")
-        
         # Registrar función de limpieza al cerrar la aplicación
         atexit.register(cleanup_pulsar_connections)
         
