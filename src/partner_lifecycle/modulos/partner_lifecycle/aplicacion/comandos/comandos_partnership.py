@@ -13,6 +13,7 @@ import uuid
 @dataclass
 class CrearPartnership(Comando):
     id: str
+    saga_id: str
     id_marca: str
     id_partner: str
     tipo_partnership: str

@@ -53,6 +53,7 @@ class EventConsumerService:
         try:
             event_type = event_data.get('event_type')
             status = event_data.get('status')
+            saga_id = event_data.get('saga_id')
             event_payload = event_data.get('event_data', {})
             
             logger.info(f"Procesando evento de partnership: {event_type} con status: {status}")
@@ -60,7 +61,7 @@ class EventConsumerService:
             
             # Aquí se pueden agregar lógicas específicas para cada tipo de evento
             if event_type == 'CommandCreatePartner' and status == 'success':
-                self._process_partnership_iniciada(event_payload)
+                self._process_partnership_iniciada(event_payload, saga_id)
             elif event_type == 'PartnershipActivada':
                 self._process_partnership_activada(event_payload)
             elif event_type == 'PartnershipSuspendida':
@@ -74,14 +75,12 @@ class EventConsumerService:
             logger.error(f"Error procesando evento de partnership: {e}")
     
     # Métodos de procesamiento específicos para cada evento
-    def _process_partnership_iniciada(self, payload):
+    def _process_partnership_iniciada(self, payload, saga_id):
         """Procesa el evento PartnershipIniciada delegando a la capa de aplicación"""
-        logger.info(f"EventConsumerService tiene event_processing_service: {self._event_processing_service is not None}")
         if self._event_processing_service:
-            self._event_processing_service.process_partnership_iniciada(payload)
+            self._event_processing_service.process_partnership_iniciada(saga_id, payload)
         else:
             logger.warning("EventProcessingService no configurado, solo logueando evento")
-            logger.info(f"Partnership iniciada: {payload.get('id_partnership')}")
     
     def _process_partnership_activada(self, payload):
         logger.info(f"Partnership activada: {payload.get('id_partnership')}")

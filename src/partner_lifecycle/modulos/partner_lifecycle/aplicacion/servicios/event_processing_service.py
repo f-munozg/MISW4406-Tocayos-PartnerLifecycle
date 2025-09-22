@@ -17,7 +17,7 @@ class EventProcessingServiceInterface(ABC):
     """Interfaz para el servicio de procesamiento de eventos"""
     
     @abstractmethod
-    def process_partnership_iniciada(self, payload: Dict[str, Any]) -> None:
+    def process_partnership_iniciada(self, key: str, payload: Dict[str, Any]) -> None:
         """Procesa el evento PartnershipIniciada"""
         pass
 
@@ -28,14 +28,13 @@ class EventProcessingService(EventProcessingServiceInterface):
         self._command_executor = command_executor
         self._app = app
     
-    def process_partnership_iniciada(self, payload: Dict[str, Any]) -> None:
+    def process_partnership_iniciada(self, key: str, payload: Dict[str, Any]) -> None:
         """Procesa el evento PartnershipIniciada ejecutando el comando CrearPartnership"""
         try:
-            logger.info(f"Procesando PartnershipIniciada: {payload.get('id_partnership')}")
-            logger.info(f"EventProcessingService tiene app: {self._app is not None}")
+            logger.info(f"Procesando PartnershipIniciada: {payload.get('id_partnership')} con saga_id: {key}")
             
             # Mapear datos del evento a comando de aplicación
-            command_data = self._map_partnership_iniciada_to_command(payload)
+            command_data = self._map_partnership_iniciada_to_command(key, payload)
             
             # Ejecutar comando a través del executor con contexto de aplicación
             self._command_executor.execute_crear_partnership(command_data, self._app)
@@ -46,10 +45,11 @@ class EventProcessingService(EventProcessingServiceInterface):
             logger.error(f"Error ejecutando CrearPartnership para partnership {payload.get('id_partnership')}: {e}")
             raise
     
-    def _map_partnership_iniciada_to_command(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def _map_partnership_iniciada_to_command(self, key: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         """Mapea los datos del evento a los datos del comando"""
         return {
             'id': payload.get('id_partnership', str(uuid.uuid4())),
+            'saga_id': key,
             'id_marca': payload.get('id_marca', str(uuid.uuid4())),
             'id_partner': payload.get('id_partner', str(uuid.uuid4())),
             'tipo_partnership': payload.get('tipo_partnership', 'marca_embajador'),

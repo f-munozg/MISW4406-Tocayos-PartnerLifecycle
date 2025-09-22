@@ -69,7 +69,7 @@ class PulsarEventPublisher:
             self.producers[topic_name] = client.create_producer(topic_name)
         return self.producers[topic_name]
     
-    def publish_event(self, evento: EventoDominio, event_type: str, status: str):
+    def publish_event(self, saga_id: uuid, evento: EventoDominio, event_type: str, status: str):
         """Publica un evento en Pulsar con routing basado en tipo y status"""
         try:
             # Determinar tenant y topic basado en el tipo de evento y status
@@ -79,7 +79,7 @@ class PulsarEventPublisher:
             
             # Serializar el evento
             event_dict = {
-                'saga_id': uuid.uuid4(),
+                'saga_id': saga_id,
                 'service': 'Partner',
                 'status': status, 
                 'event_id': evento.id,
