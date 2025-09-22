@@ -27,6 +27,9 @@ logger = logging.getLogger(__name__)
 @ejecutar_commando.register
 def _(comando: CrearPartnership):
     """Handler para crear nueva partnership"""
+    evento = None  # Initialize evento variable
+    partnership_model = None  # Initialize partnership_model variable
+    
     try:
         # Crear modelo de base de datos directamente
         partnership_model = PartnershipDBModel()
@@ -71,8 +74,22 @@ def _(comando: CrearPartnership):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Error creando partnership: {e}")
-        if PULSAR_AVAILABLE and pulsar_publisher:
-           pulsar_publisher.publish_event(evento, 'CommandCreatePartner', 'failed')
+        
+        # Only publish failure event if we have a valid partnership_model to create evento from
+        if PULSAR_AVAILABLE and pulsar_publisher and partnership_model is not None:
+            try:
+                # Create evento for failure case using the partnership_model if available
+                from partner_lifecycle.modulos.partner_lifecycle.dominio.entidades import PartnershipIniciada
+                evento = PartnershipIniciada(
+                    id_partnership=partnership_model.id,
+                    id_marca=partnership_model.id_marca,
+                    id_partner=partnership_model.id_partner,
+                    tipo_partnership=partnership_model.tipo_partnership.value,
+                    fecha_inicio=partnership_model.fecha_creacion
+                )
+                pulsar_publisher.publish_event(evento, 'CommandCreatePartner', 'failed')
+            except Exception as event_error:
+                logger.error(f"Error creando evento de fallo: {event_error}")
         else:
-           logger.info("Pulsar no disponible, evento no publicado")
+           logger.info("Pulsar no disponible o partnership_model no disponible, evento no publicado")
         raise
