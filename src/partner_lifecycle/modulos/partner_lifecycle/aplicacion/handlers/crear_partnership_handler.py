@@ -31,6 +31,11 @@ def _(comando: CrearPartnership):
     partnership_model = None  # Initialize partnership_model variable
     
     try:
+
+        if comando.id_marca == "c9b27e5f-5fa2-41bc-a539-1ce87d02a2f9":
+            logger.error(f"Marca no permitida: {comando.id_marca} -> saga {comando.saga_id} -> pasando a rollback")
+            raise Exception("Marca no permitida")
+
         # Crear modelo de base de datos directamente
         partnership_model = PartnershipDBModel()
         partnership_model.id = uuid.UUID(comando.id)
@@ -78,16 +83,16 @@ def _(comando: CrearPartnership):
         # Only publish failure event if we have a valid partnership_model to create evento from
         if PULSAR_AVAILABLE and pulsar_publisher and partnership_model is not None:
             try:
-                # Create evento for failure case using the partnership_model if available
-                from partner_lifecycle.modulos.partner_lifecycle.dominio.entidades import PartnershipIniciada
-                evento = PartnershipIniciada(
+                # Create appropriate failure event using the partnership_model if available
+                from partner_lifecycle.modulos.partner_lifecycle.dominio.entidades import PartnershipCreationFailed
+                evento = PartnershipCreationFailed(
                     id_partnership=partnership_model.id,
                     id_marca=partnership_model.id_marca,
                     id_partner=partnership_model.id_partner,
                     tipo_partnership=partnership_model.tipo_partnership.value,
                     fecha_inicio=partnership_model.fecha_creacion
                 )
-                pulsar_publisher.publish_event(evento, 'CommandCreatePartner', 'failed')
+                pulsar_publisher.publish_event(comando.saga_id, evento, 'CommandCreatePartner', 'failed')
             except Exception as event_error:
                 logger.error(f"Error creando evento de fallo: {event_error}")
         else:

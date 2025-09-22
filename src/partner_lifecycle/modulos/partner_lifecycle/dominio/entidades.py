@@ -181,3 +181,11 @@ class NivelPartnershipActualizado(EventoDominio):
     nivel_anterior: str = None
     nivel_nuevo: str = None
     fecha_actualizacion: datetime = None
+
+@dataclass
+class PartnershipCreationFailed(EventoDominio):
+    id_partnership: uuid.UUID = None
+    id_marca: uuid.UUID = None
+    id_partner: uuid.UUID = None
+    tipo_partnership: str = None
+    fecha_inicio: datetime = None

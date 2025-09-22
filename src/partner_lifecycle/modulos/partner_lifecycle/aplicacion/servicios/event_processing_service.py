@@ -31,7 +31,7 @@ class EventProcessingService(EventProcessingServiceInterface):
     def process_partnership_iniciada(self, key: str, payload: Dict[str, Any]) -> None:
         """Procesa el evento PartnershipIniciada ejecutando el comando CrearPartnership"""
         try:
-            logger.info(f"Procesando PartnershipIniciada: {payload.get('id_partnership')} con saga_id: {key}")
+            logger.info(f"Procesando PartnershipIniciada con saga_id: {key} y payload: {payload}")
             
             # Mapear datos del evento a comando de aplicación
             command_data = self._map_partnership_iniciada_to_command(key, payload)
