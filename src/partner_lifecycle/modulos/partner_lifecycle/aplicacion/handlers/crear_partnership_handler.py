@@ -36,10 +36,6 @@ def _(comando: CrearPartnership):
     
     try:
 
-        if comando.id_marca == "c9b27e5f-5fa2-41bc-a539-1ce87d02a2f9":
-            logger.error(f"Marca no permitida: {comando.id_marca} -> saga {comando.saga_id} -> pasando a rollback")
-            raise Exception("Marca no permitida")
-
         # Crear modelo de base de datos directamente
         partnership_model = PartnershipDBModel()
         partnership_model.id = uuid.UUID(comando.id)
@@ -59,6 +55,11 @@ def _(comando: CrearPartnership):
         if comando.fecha_actualizacion:
             partnership_model.fecha_actualizacion = datetime.fromisoformat(comando.fecha_actualizacion)
         
+        # Excepción forzada para probar el rollback
+        if comando.id_marca == "c9b27e5f-5fa2-41bc-a539-1ce87d02a2f9":
+            logger.error(f"Marca no permitida: {comando.id_marca} -> saga {comando.saga_id} -> pasando a rollback")
+            raise Exception("Marca no permitida") 
+
         # Guardar en base de datos
         db.session.add(partnership_model)
         db.session.commit()

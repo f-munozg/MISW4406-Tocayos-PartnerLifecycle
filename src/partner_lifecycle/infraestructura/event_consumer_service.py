@@ -94,8 +94,9 @@ class EventConsumerService:
 # Instancia global del servicio (se configurará con dependency injection)
 event_consumer_service = None
 
-def configure_event_consumer_service(app, event_processing_service):
+def configure_event_consumer_service(app, event_processing_service=None):
     """Configura el servicio de consumo de eventos con dependency injection"""
     global event_consumer_service
-    event_consumer_service = EventConsumerService(app, event_processing_service)
+    if event_consumer_service is None:
+        event_consumer_service = EventConsumerService(app, event_processing_service)
     return event_consumer_service
