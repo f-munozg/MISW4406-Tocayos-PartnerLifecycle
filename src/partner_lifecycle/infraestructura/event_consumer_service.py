@@ -25,7 +25,7 @@ class EventConsumerService:
         self.running = True
         
         # Eventos de partnerships
-        self._start_consumer('partner-events', self._handle_partner_event)
+        self._start_consumer('content-events', self._handle_partner_event)
         
         logger.info("Servicio de consumo de eventos iniciado")
     
@@ -52,12 +52,13 @@ class EventConsumerService:
         """Maneja eventos de partnerships"""
         try:
             event_type = event_data.get('event_type')
+            status = event_data.get('status')
             event_payload = event_data.get('event_data', {})
             
             logger.info(f"Procesando evento de partnership: {event_type}")
             
             # Aquí se pueden agregar lógicas específicas para cada tipo de evento
-            if event_type == 'CommandCreatePartner':
+            if event_type == 'CommandCreatePartner' and status == 'success':
                 self._process_partnership_iniciada(event_payload)
             elif event_type == 'PartnershipActivada':
                 self._process_partnership_activada(event_payload)
