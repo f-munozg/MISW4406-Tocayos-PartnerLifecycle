@@ -33,9 +33,11 @@ class PulsarConfig:
         self.tenant = 'partner-lifecycle'
         self.namespace = 'events'
         
-    def get_topic_name(self, event_type: str, tenant: str = None) -> str:
+    def get_topic_name(self, event_type: str) -> str:
         """Genera el nombre del topic basado en el tipo de evento y tenant"""
-        target_tenant = tenant or self.tenant
+        target_tenant = self.tenant
+        if event_type.startswith('content'):
+            target_tenant = 'content-management'
         return f"persistent://{target_tenant}/{self.namespace}/{event_type}"
     
     def get_routing_config(self, event_type: str, status: str) -> tuple:
