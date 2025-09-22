@@ -40,15 +40,15 @@ class PulsarConfig:
             target_tenant = 'content-management'
         return f"persistent://{target_tenant}/{self.namespace}/{event_type}"
     
-    def get_routing_config(self, event_type: str, status: str) -> tuple:
+    def get_routing_config(self, event_type: str, status: str) -> str:
         """Determina el tenant y topic basado en el tipo de evento y status"""
         if event_type == 'CommandCreatePartner' and status == 'failed':
-            return 'content-management', 'content-events'
+            return 'content-events'
         elif event_type == 'EventPartnerCreated' and status == 'success':
-            return 'partner-lifecycle', 'partner-events'
+            return 'partner-events'
         else:
             # Default routing
-            return self.tenant, event_type
+            return event_type
 
 class PulsarEventPublisher:
     def __init__(self):
@@ -73,8 +73,8 @@ class PulsarEventPublisher:
         """Publica un evento en Pulsar con routing basado en tipo y status"""
         try:
             # Determinar tenant y topic basado en el tipo de evento y status
-            tenant, topic = self.config.get_routing_config(event_type, status)
-            topic_name = self.config.get_topic_name(topic, tenant)
+            topic = self.config.get_routing_config(event_type, status)
+            topic_name = self.config.get_topic_name(topic)
             producer = self._get_producer(topic_name)
             
             # Serializar el evento
@@ -91,7 +91,7 @@ class PulsarEventPublisher:
             
             # Publicar el evento
             producer.send(event_data.encode('utf-8'))
-            logger.info(f"Evento publicado en {topic_name} (tenant: {tenant}, topic: {topic}): {evento.__class__.__name__}")
+            logger.info(f"Evento publicado en {topic_name} (topic: {topic}): {evento.__class__.__name__}")
             
         except Exception as e:
             logger.error(f"Error publicando evento en Pulsar: {e}")
